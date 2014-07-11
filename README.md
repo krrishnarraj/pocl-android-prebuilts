@@ -1,4 +1,4 @@
 pocl-android-prebuilts
 ======================
 
-prebuilt libraries required to build android version of pocl [EMPTY]
+Contains prebuilt libraries that is required to build android version of pocl
