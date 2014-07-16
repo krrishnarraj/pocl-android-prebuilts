@@ -1,0 +1,61 @@
+From dff01845d66f41bc27c0a527c51ddbc8d98d1fab Mon Sep 17 00:00:00 2001
+From: Krishnaraj R Bhat <krrishnarraj@gmail.com>
+Date: Wed, 16 Jul 2014 22:23:23 +0530
+Subject: [PATCH] Weak definitions of faccessat & getline for android Obviously
+ this is going to get over-ridden by global symbols in bionic if present
+
+---
+ src/topology-linux.c | 37 +++++++++++++++++++++++++++++++++++++
+ 1 file changed, 37 insertions(+)
+
+diff --git a/src/topology-linux.c b/src/topology-linux.c
+index a42b4f3..ed34364 100644
+--- a/src/topology-linux.c
++++ b/src/topology-linux.c
+@@ -129,6 +129,43 @@ struct hwloc_linux_backend_data_s {
+ /* Added for ntohl() */
+ #include <arpa/inet.h>
+ 
++/*	Weak definitions of faccessat & getline for android
++		Obviously this is going to get over-ridden by global symbols in libc
++		Defined here to avoid linker errors in android ndk
++*/
++__attribute__((weak)) ssize_t getline(char **lineptr, size_t *n, FILE *stream);
++__attribute__((weak)) int faccessat(int dirfd,
++                        const char *pathname, int mode, int flags);
++
++__attribute__((weak)) ssize_t getline(char **lineptr, size_t *n, FILE *stream)
++{
++  char *ptr;
++  size_t len;
++  ptr = fgetln(stream, n);
++
++  if (ptr == NULL) {
++    return -1;
++  }
++
++  if (*lineptr != NULL) {
++    free(*lineptr);
++  }
++
++  len = n[0] + 1;
++  n[0] = len;
++  *lineptr = malloc(len);
++  memcpy(*lineptr, ptr, len-1);
++  (*lineptr)[len-1] = '\0';
++
++  return len;
++}
++
++__attribute__((weak)) int faccessat(int dirfd __hwloc_attribute_unused,
++                  const char *pathname, int mode, int flags __hwloc_attribute_unused)
++{
++	return access(pathname, mode);
++}
++
+ #ifdef HAVE_OPENAT
+ /* Use our own filesystem functions if we have openat */
+ 
+-- 
+1.9.3
+
