@@ -17,22 +17,23 @@
 
 #include "llvm/ADT/DenseMap.h"
 #include "llvm/CodeGen/MachineBasicBlock.h"
-#include "llvm/CodeGen/ValueTypes.h"
 
 namespace llvm {
 
 class AllocaInst;
 class Constant;
 class ConstantFP;
+class CallInst;
+class DataLayout;
 class FunctionLoweringInfo;
 class Instruction;
 class LoadInst;
+class MVT;
 class MachineConstantPool;
+class MachineFrameInfo;
 class MachineFunction;
 class MachineInstr;
-class MachineFrameInfo;
 class MachineRegisterInfo;
-class DataLayout;
 class TargetInstrInfo;
 class TargetLibraryInfo;
 class TargetLowering;
@@ -48,12 +49,13 @@ class FastISel {
 protected:
   DenseMap<const Value *, unsigned> LocalValueMap;
   FunctionLoweringInfo &FuncInfo;
+  MachineFunction *MF;
   MachineRegisterInfo &MRI;
   MachineFrameInfo &MFI;
   MachineConstantPool &MCP;
-  DebugLoc DL;
+  DebugLoc DbgLoc;
   const TargetMachine &TM;
-  const DataLayout &TD;
+  const DataLayout &DL;
   const TargetInstrInfo &TII;
   const TargetLowering &TLI;
   const TargetRegisterInfo &TRI;
@@ -87,7 +89,7 @@ public:
   void startNewBlock();
 
   /// Return current debug location information.
-  DebugLoc getCurDebugLoc() const { return DL; }
+  DebugLoc getCurDebugLoc() const { return DbgLoc; }
   
   /// Do "fast" instruction selection for function arguments and append machine
   /// instructions to the current block. Return true if it is successful.
@@ -343,6 +345,12 @@ protected:
 
   unsigned createResultReg(const TargetRegisterClass *RC);
 
+  /// Try to constrain Op so that it is usable by argument OpNum of the provided
+  /// MCInstrDesc. If this fails, create a new virtual register in the correct
+  /// class and COPY the value there.
+  unsigned constrainOperandRegClass(const MCInstrDesc &II, unsigned Op,
+                                    unsigned OpNum);
+
   /// Emit a constant in a register using target-specific logic, such as
   /// constant pool loads.
   virtual unsigned TargetMaterializeConstant(const Constant* C) {
@@ -367,6 +375,12 @@ protected:
   /// - \c Add has a constant operand.
   bool canFoldAddIntoGEP(const User *GEP, const Value *Add);
 
+  /// Test whether the given value has exactly one use.
+  bool hasTrivialKill(const Value *V) const;
+
+  /// \brief Create a machine mem operand from the given instruction.
+  MachineMemOperand *createMachineMemOperandFor(const Instruction *I) const;
+
 private:
   bool SelectBinaryOp(const User *I, unsigned ISDOpcode);
 
@@ -374,6 +388,7 @@ private:
 
   bool SelectGetElementPtr(const User *I);
 
+  bool SelectStackmap(const CallInst *I);
   bool SelectCall(const User *I);
 
   bool SelectBitCast(const User *I);
@@ -403,8 +418,8 @@ private:
   /// heavy instructions like calls.
   void flushLocalValueMap();
 
-  /// Test whether the given value has exactly one use.
-  bool hasTrivialKill(const Value *V) const;
+  bool addStackMapLiveVars(SmallVectorImpl<MachineOperand> &Ops,
+                           const CallInst *CI, unsigned StartIdx);
 };
 
 }

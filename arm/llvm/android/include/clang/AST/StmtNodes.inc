@@ -165,12 +165,6 @@ STMT_RANGE(BinaryOperator, BinaryOperator, CompoundAssignOperator)
 
 #undef BINARYOPERATOR
 
-#ifndef BINARYTYPETRAITEXPR
-#  define BINARYTYPETRAITEXPR(Type, Base) EXPR(Type, Base)
-#endif
-BINARYTYPETRAITEXPR(BinaryTypeTraitExpr, Expr)
-#undef BINARYTYPETRAITEXPR
-
 #ifndef BLOCKEXPR
 #  define BLOCKEXPR(Type, Base) EXPR(Type, Base)
 #endif
@@ -729,12 +723,6 @@ UNARYEXPRORTYPETRAITEXPR(UnaryExprOrTypeTraitExpr, Expr)
 UNARYOPERATOR(UnaryOperator, Expr)
 #undef UNARYOPERATOR
 
-#ifndef UNARYTYPETRAITEXPR
-#  define UNARYTYPETRAITEXPR(Type, Base) EXPR(Type, Base)
-#endif
-UNARYTYPETRAITEXPR(UnaryTypeTraitExpr, Expr)
-#undef UNARYTYPETRAITEXPR
-
 #ifndef VAARGEXPR
 #  define VAARGEXPR(Type, Base) EXPR(Type, Base)
 #endif
@@ -791,13 +779,55 @@ NULLSTMT(NullStmt, Stmt)
 #  define OMPEXECUTABLEDIRECTIVE(Type, Base) STMT(Type, Base)
 #endif
 ABSTRACT_STMT(OMPEXECUTABLEDIRECTIVE(OMPExecutableDirective, Stmt))
+#ifndef OMPFORDIRECTIVE
+#  define OMPFORDIRECTIVE(Type, Base) OMPEXECUTABLEDIRECTIVE(Type, Base)
+#endif
+OMPFORDIRECTIVE(OMPForDirective, OMPExecutableDirective)
+#undef OMPFORDIRECTIVE
+
 #ifndef OMPPARALLELDIRECTIVE
 #  define OMPPARALLELDIRECTIVE(Type, Base) OMPEXECUTABLEDIRECTIVE(Type, Base)
 #endif
 OMPPARALLELDIRECTIVE(OMPParallelDirective, OMPExecutableDirective)
 #undef OMPPARALLELDIRECTIVE
 
-STMT_RANGE(OMPExecutableDirective, OMPParallelDirective, OMPParallelDirective)
+#ifndef OMPPARALLELFORDIRECTIVE
+#  define OMPPARALLELFORDIRECTIVE(Type, Base) OMPEXECUTABLEDIRECTIVE(Type, Base)
+#endif
+OMPPARALLELFORDIRECTIVE(OMPParallelForDirective, OMPExecutableDirective)
+#undef OMPPARALLELFORDIRECTIVE
+
+#ifndef OMPPARALLELSECTIONSDIRECTIVE
+#  define OMPPARALLELSECTIONSDIRECTIVE(Type, Base) OMPEXECUTABLEDIRECTIVE(Type, Base)
+#endif
+OMPPARALLELSECTIONSDIRECTIVE(OMPParallelSectionsDirective, OMPExecutableDirective)
+#undef OMPPARALLELSECTIONSDIRECTIVE
+
+#ifndef OMPSECTIONDIRECTIVE
+#  define OMPSECTIONDIRECTIVE(Type, Base) OMPEXECUTABLEDIRECTIVE(Type, Base)
+#endif
+OMPSECTIONDIRECTIVE(OMPSectionDirective, OMPExecutableDirective)
+#undef OMPSECTIONDIRECTIVE
+
+#ifndef OMPSECTIONSDIRECTIVE
+#  define OMPSECTIONSDIRECTIVE(Type, Base) OMPEXECUTABLEDIRECTIVE(Type, Base)
+#endif
+OMPSECTIONSDIRECTIVE(OMPSectionsDirective, OMPExecutableDirective)
+#undef OMPSECTIONSDIRECTIVE
+
+#ifndef OMPSIMDDIRECTIVE
+#  define OMPSIMDDIRECTIVE(Type, Base) OMPEXECUTABLEDIRECTIVE(Type, Base)
+#endif
+OMPSIMDDIRECTIVE(OMPSimdDirective, OMPExecutableDirective)
+#undef OMPSIMDDIRECTIVE
+
+#ifndef OMPSINGLEDIRECTIVE
+#  define OMPSINGLEDIRECTIVE(Type, Base) OMPEXECUTABLEDIRECTIVE(Type, Base)
+#endif
+OMPSINGLEDIRECTIVE(OMPSingleDirective, OMPExecutableDirective)
+#undef OMPSINGLEDIRECTIVE
+
+STMT_RANGE(OMPExecutableDirective, OMPForDirective, OMPSingleDirective)
 
 #undef OMPEXECUTABLEDIRECTIVE
 
@@ -860,6 +890,12 @@ SEHEXCEPTSTMT(SEHExceptStmt, Stmt)
 #endif
 SEHFINALLYSTMT(SEHFinallyStmt, Stmt)
 #undef SEHFINALLYSTMT
+
+#ifndef SEHLEAVESTMT
+#  define SEHLEAVESTMT(Type, Base) STMT(Type, Base)
+#endif
+SEHLEAVESTMT(SEHLeaveStmt, Stmt)
+#undef SEHLEAVESTMT
 
 #ifndef SEHTRYSTMT
 #  define SEHTRYSTMT(Type, Base) STMT(Type, Base)
